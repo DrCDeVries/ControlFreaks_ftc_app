@@ -1,4 +1,4 @@
-package org.usfirst.ControlFreaks;
+package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 /**
  * Created by adevries on 11/16/2015.

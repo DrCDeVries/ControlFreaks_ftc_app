@@ -1,4 +1,4 @@
-package org.usfirst.ControlFreaks;
+package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 import android.media.AudioManager;
 import android.media.ToneGenerator;

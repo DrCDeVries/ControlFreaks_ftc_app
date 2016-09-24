@@ -1,9 +1,7 @@
-package org.usfirst.ControlFreaks;
+package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import java.util.Calendar;
 
 /**
  * Created by adevries on 11/16/2015.

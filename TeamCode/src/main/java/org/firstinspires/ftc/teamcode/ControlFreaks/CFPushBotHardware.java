@@ -1,10 +1,9 @@
-package com.qualcomm.ftcrobotcontroller.opmodes;
+package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 /**
  * Created by adevries on 11/6/2015.
  */
 
-import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 
@@ -15,30 +14,21 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.I2cDevice;
-import com.qualcomm.robotcore.hardware.LED;
-import com.qualcomm.robotcore.hardware.LightSensor;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
-import com.qualcomm.robotcore.hardware.IrSeekerSensor;
-import com.qualcomm.robotcore.util.RobotLog;
-import com.qualcomm.robotcore.util.TypeConversion;
-//import com.qualcomm.ftcrobotcontroller.opmodes.ColorSensorDriver;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 
-import org.usfirst.ControlFreaks.AdafruitLEDBackpack7Seg;
-import org.usfirst.ControlFreaks.ArduinoI2CNeopixels;
-import org.usfirst.ControlFreaks.AudioEffects;
+//import com.qualcomm.ftcrobotcontroller.opmodes.ColorSensorDriver;
+
+import org.firstinspires.ftc.teamcode.ControlFreaks.ArduinoI2CNeopixels;
+import org.firstinspires.ftc.teamcode.ControlFreaks.AudioEffects;
 
 import java.util.Calendar;
-import java.util.concurrent.locks.Lock;
 
-public class CFPushBotHardware extends OpMode {
+public class CFPushBotHardware{
 
     public boolean v_debug = true;  //set this to false to prevent writing to log makes loop lots shorter
 
@@ -53,8 +43,8 @@ public class CFPushBotHardware extends OpMode {
     //new treads
     private static final float v_turn_ticks_per_degree = 22.6f;
 
-    private static final double v_turn_motorspeed = .5d;
-    private static final double v_turn_motorspeed_slow = .2d;
+    private static final float v_turn_motorspeed = .5f;
+    private static final float v_turn_motorspeed_slow = .2f;
     private static final int v_turn_degrees_heading_drift_error = 5;
 
     //old treads
@@ -130,6 +120,7 @@ public class CFPushBotHardware extends OpMode {
     public static final double ArmWristTrigger_Threshold_Fast = 0.9;
 */
 
+    private org.firstinspires.ftc.robotcore.external.Telemetry telemetry;
     // v_servo_flip_right
     private Servo v_servo_flip_right;
     //private static final double FlipRightServo_Delta = 0.005;
@@ -199,7 +190,7 @@ public class CFPushBotHardware extends OpMode {
     AudioEffects v_audio_effects;
 // (tone type, tone duration in ms)
 // from a list of predefined tone types
-
+    OpMode opMode;
 
 //    private LED v_led_heartbeat;
 //    private boolean v_led_heartbeat_enabled = true;
@@ -238,17 +229,7 @@ public class CFPushBotHardware extends OpMode {
      */
     private DcMotor v_motor_right_drive;
 
-    private CFPushBotTelemetry v_CFPushBotTelemetry; //hack to allow use to set error messages using telmentry
-
-    public void setTelemetry(CFPushBotTelemetry objCFPushBotTelemetry){
-        v_CFPushBotTelemetry= objCFPushBotTelemetry;
-    }
-    private void setSecondMessage(String message){
-        if (v_CFPushBotTelemetry != null){
-
-            v_CFPushBotTelemetry.set_second_message(message);
-        }
-    }
+    
     //--------------------------------------------------------------------------
     //
     // v_warning_generated
@@ -300,7 +281,7 @@ public class CFPushBotHardware extends OpMode {
      *
      * The system calls this member once when the OpMode is enabled.
      */
-    @Override public void init ()
+    public void init (OpMode ahOpmode)
 
     {
         //
@@ -312,6 +293,7 @@ public class CFPushBotHardware extends OpMode {
         //
         // The variable below is used to provide telemetry data to a class user.
         //
+        opMode = ahOpmode;
         v_warning_generated = false;
         v_warning_message = "Can't map; ";
 
@@ -320,7 +302,7 @@ public class CFPushBotHardware extends OpMode {
         try {
 
             // set up the hardware devices we are going to use
-            v_dim = hardwareMap.deviceInterfaceModule.get("dim");
+            v_dim = opMode.hardwareMap.deviceInterfaceModule.get("dim");
 
 
         }catch (Exception p_exeception)
@@ -333,7 +315,7 @@ public class CFPushBotHardware extends OpMode {
 
         try {
             // get a reference to our GyroSensor object.
-            v_sensor_gyro = hardwareMap.gyroSensor.get("gyro1");
+            v_sensor_gyro = opMode.hardwareMap.gyroSensor.get("gyro1");
             // calibrate the gyro.
             v_sensor_gyro.calibrate();
             // make sure the gyro is calibrated.
@@ -346,7 +328,7 @@ public class CFPushBotHardware extends OpMode {
             v_sensor_gyro.resetZAxisIntegrator();
             sleep(200);
             //v_sensor_gyro_heading = v_sensor_gyro.getHeading();
-            setSecondMessage("Gyro isCalibrated H:" + v_sensor_gyro.getHeading() );
+            set_second_message("Gyro isCalibrated H:" + v_sensor_gyro.getHeading() );
         }catch(Exception p_exeception){
 
             m_warning_message ("gyro1");
@@ -362,7 +344,7 @@ public class CFPushBotHardware extends OpMode {
         //
         try
         {
-            v_motor_left_drive = hardwareMap.dcMotor.get ("left_drive");
+            v_motor_left_drive = opMode.hardwareMap.dcMotor.get ("left_drive");
             v_motor_left_drive.setDirection (DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
@@ -373,7 +355,7 @@ public class CFPushBotHardware extends OpMode {
 
         try
         {
-            v_motor_right_drive = hardwareMap.dcMotor.get ("right_drive");
+            v_motor_right_drive = opMode.hardwareMap.dcMotor.get ("right_drive");
 
             //v_motor_right_drive.setDirection (DcMotor.Direction.REVERSE);
         }
@@ -439,9 +421,9 @@ public class CFPushBotHardware extends OpMode {
         try
         {
             //// Get a reference to the touch sensor
-            v_sensor_touch_rpa_arm_retract = hardwareMap.touchSensor.get(RPAArmMotor_Retract_TouchSensorName);
-            v_sensor_touch_rpa_arm_extend = hardwareMap.touchSensor.get(RPAArmMotor_Extend_TouchSensorName);
-            v_motor_rpa_arm = hardwareMap.dcMotor.get ("rpa_arm");
+            v_sensor_touch_rpa_arm_retract = opMode.hardwareMap.touchSensor.get(RPAArmMotor_Retract_TouchSensorName);
+            v_sensor_touch_rpa_arm_extend = opMode.hardwareMap.touchSensor.get(RPAArmMotor_Extend_TouchSensorName);
+            v_motor_rpa_arm = opMode.hardwareMap.dcMotor.get ("rpa_arm");
             //v_motor_right_drive.setDirection (DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
@@ -518,7 +500,7 @@ public class CFPushBotHardware extends OpMode {
         //
         try
         {
-            v_servo_flip_right = hardwareMap.servo.get("flip_right");
+            v_servo_flip_right = opMode.hardwareMap.servo.get("flip_right");
             v_servo_flip_right.setPosition (l_flip_right_position);
         }
         catch (Exception p_exeception)
@@ -547,7 +529,7 @@ public class CFPushBotHardware extends OpMode {
         //
         try
         {
-            v_servo_dump_climbers = hardwareMap.servo.get("dump");
+            v_servo_dump_climbers = opMode.hardwareMap.servo.get("dump");
             v_servo_dump_climbers.setPosition(v_servo_dump_climbers_position);
         }
         catch (Exception p_exeception)
@@ -577,7 +559,7 @@ public class CFPushBotHardware extends OpMode {
 
         try
         {
-            v_servo_rpa_base = hardwareMap.servo.get ("rpa_base");
+            v_servo_rpa_base = opMode.hardwareMap.servo.get ("rpa_base");
             v_servo_rpa_base.scaleRange(RPABaseServo_MinPosition,RPABaseServo_MaxPosition); //set the max range to allow the servo to move
             v_servo_rpa_base.setPosition(l_rpa_base_position);
         }
@@ -589,7 +571,7 @@ public class CFPushBotHardware extends OpMode {
 
         try
         {
-            v_motor_winch = hardwareMap.dcMotor.get ("winch");
+            v_motor_winch = opMode.hardwareMap.dcMotor.get ("winch");
             //  v_motor_winch.setDirection(DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
@@ -650,7 +632,7 @@ public class CFPushBotHardware extends OpMode {
 
         try{
 
-            v_ledseg = new AdafruitLEDBackpack7Seg(hardwareMap, "ledseg");
+            v_ledseg = new AdafruitLEDBackpack7Seg(opMode.hardwareMap, "ledseg");
 
         }catch (Exception p_exeception)
         {
@@ -661,7 +643,7 @@ public class CFPushBotHardware extends OpMode {
 
         try{
             if (v_neopixels_use_i2c) {
-                v_neopixels = new ArduinoI2CNeopixels(hardwareMap, "neopixels");
+                v_neopixels = new ArduinoI2CNeopixels(opMode.hardwareMap, "neopixels");
                 debugLogException("neopixels", "inited", null);
             }else {
                 v_dim.setDigitalChannelMode(v_neopixel_modechange_pin, DigitalChannelController.Mode.OUTPUT);
@@ -680,9 +662,9 @@ public class CFPushBotHardware extends OpMode {
         }
 
         //update our telmentry after init so we know if we are missing anything
-        if(v_CFPushBotTelemetry != null){
-            v_CFPushBotTelemetry.update_telemetry();
-        }
+
+        update_telemetry();
+
     } // init
 
     //--------------------------------------------------------------------------
@@ -799,39 +781,8 @@ public class CFPushBotHardware extends OpMode {
      *
      * The system calls this member once when the OpMode is enabled.
      */
-    @Override public void start ()
 
-    {
-        //
-        // Only actions that are common to all Op-Modes (i.e. both automatic and
-        // manual) should be implemented here.
-        //
-        // This method is designed to be overridden.
-        //
 
-    } // start
-
-    //--------------------------------------------------------------------------
-    //
-    // loop
-    //
-    /**
-     * Perform any actions that are necessary while the OpMode is running.
-     *
-     * The system calls this member repeatedly while the OpMode is running.
-     */
-    @Override public void loop ()
-
-    {
-
-        //
-        // Only actions that are common to all OpModes (i.e. both auto and\
-        // manual) should be implemented here.
-        //
-        // This method is designed to be overridden.
-        //
-
-    } // loop
 
     //--------------------------------------------------------------------------
     //
@@ -842,7 +793,7 @@ public class CFPushBotHardware extends OpMode {
      *
      * The system calls this member once when the OpMode is disabled.
      */
-    @Override public void stop ()
+    public void stop ()
     {
         //
         // Nothing needs to be done for this method.
@@ -1019,18 +970,20 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Scale the joystick input using a nonlinear algorithm.
      */
-    void set_drive_power (double p_left_power, double p_right_power)
-
+   public void set_drive_power (float p_left_power, float p_right_power)
     {
+        float l_left_drive_power = scale_motor_power(p_left_power);
+        float l_right_drive_power = scale_motor_power(p_right_power);
+
         if (v_motor_left_drive != null)
         {
-            v_motor_left_drive.setPower (p_left_power);
+            v_motor_left_drive.setPower (l_left_drive_power);
         }
         if (v_motor_right_drive != null)
         {
-            v_motor_right_drive.setPower(p_right_power);
+            v_motor_right_drive.setPower(l_right_drive_power);
         }
-        //setSecondMessage("set_drive_power " + p_left_power + ":" + p_right_power);
+        //set_second_message("set_drive_power " + p_left_power + ":" + p_right_power);
     } // set_drive_power
 
     //--------------------------------------------------------------------------
@@ -1046,7 +999,7 @@ public class CFPushBotHardware extends OpMode {
         if (v_motor_left_drive != null)
         {
             v_motor_left_drive.setMode
-                    (DcMotorController.RunMode.RUN_USING_ENCODERS
+                    (DcMotor.RunMode.RUN_USING_ENCODER
                     );
         }
 
@@ -1065,7 +1018,7 @@ public class CFPushBotHardware extends OpMode {
         if (v_motor_right_drive != null)
         {
             v_motor_right_drive.setMode
-                    (DcMotorController.RunMode.RUN_USING_ENCODERS
+                    (DcMotor.RunMode.RUN_USING_ENCODER
                     );
         }
 
@@ -1178,14 +1131,15 @@ public class CFPushBotHardware extends OpMode {
     {
         if (v_motor_left_drive != null)
         {
+            //This may Cause a Stop Now versus just a rest andy 09/24/2016
             v_motor_left_drive.setMode
-                    (DcMotorController.RunMode.RESET_ENCODERS
+                    (DcMotor.RunMode.STOP_AND_RESET_ENCODER
                     );
         }
 
     } // reset_left_drive_encoder
 
-    public boolean isInDriveMode(DcMotorController.RunMode RunMode){
+    public boolean isInDriveMode(DcMotor.RunMode RunMode){
         if (v_motor_left_drive != null && v_motor_right_drive != null){
             if(v_motor_left_drive.getMode() == RunMode && v_motor_right_drive.getMode() == RunMode){
                 return true;
@@ -1209,7 +1163,7 @@ public class CFPushBotHardware extends OpMode {
         if (v_motor_right_drive != null)
         {
             v_motor_right_drive.setMode
-                    (DcMotorController.RunMode.RESET_ENCODERS
+                    (DcMotor.RunMode.STOP_AND_RESET_ENCODER
                     );
         }
 
@@ -1256,7 +1210,7 @@ public class CFPushBotHardware extends OpMode {
     /**
      * Access the left drive mode.
      */
-    DcMotorController.RunMode a_left_drive_mode ()
+    DcMotor.RunMode a_left_drive_mode ()
     {
 
 
@@ -1265,14 +1219,14 @@ public class CFPushBotHardware extends OpMode {
             return v_motor_left_drive.getMode();
         }
 
-        return DcMotorController.RunMode.RUN_TO_POSITION;
+        return DcMotor.RunMode.RUN_TO_POSITION;
 
     } // a_left_drive_mode
 
     /**
      * Access the right drive mode.
      */
-    DcMotorController.RunMode a_right_drive_mode ()
+    DcMotor.RunMode a_right_drive_mode ()
     {
 
 
@@ -1281,7 +1235,7 @@ public class CFPushBotHardware extends OpMode {
             return v_motor_right_drive.getMode();
         }
 
-        return DcMotorController.RunMode.RUN_TO_POSITION;
+        return DcMotor.RunMode.RUN_TO_POSITION;
 
     } // a_right_drive_mode
 
@@ -1493,8 +1447,8 @@ public class CFPushBotHardware extends OpMode {
      */
 
     public boolean drive_using_encoders
-    ( double p_left_power
-            , double p_right_power
+    ( float p_left_power
+            , float p_right_power
             , double p_left_count
             , double p_right_count
             , boolean useGyro
@@ -1647,7 +1601,7 @@ public class CFPushBotHardware extends OpMode {
     private long v_drive_inches_ticks_target_left_stop;
     private long v_drive_inches_ticks_target_right;
     private long v_drive_inches_ticks_target_left;
-    private double v_drive_inches_power;
+    private float v_drive_inches_power;
     private boolean v_drive_inches_useGyro;
     private int v_drive_inches_state;
     private int v_drive_inches_heading;
@@ -1655,7 +1609,7 @@ public class CFPushBotHardware extends OpMode {
     private static final float v_drive_inches_power_gyro_correction = 0.1f;
     private static final int v_drive_inches_power_gyro_correction_max_times = 6;
 
-    public void drive_inches(double power,float inches, boolean useGyro){
+    public void drive_inches(float power,float inches, boolean useGyro){
         try {
 
             if (v_motor_left_drive == null || v_motor_right_drive == null){
@@ -1690,7 +1644,7 @@ public class CFPushBotHardware extends OpMode {
             v_drive_inches_useGyro = useGyro;
             v_drive_inches_state = 0;
             v_drive_slowdown1_already_set = false;
-            setSecondMessage("drive_inches: p: " + v_drive_inches_power
+            set_second_message("drive_inches: p: " + v_drive_inches_power
                     + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                     + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
                     + ",tlst:" + v_drive_inches_ticks_target_left_stop + ",trst:" + v_drive_inches_ticks_target_right_stop
@@ -1790,7 +1744,7 @@ public class CFPushBotHardware extends OpMode {
                 //add a delay to handle any stupid issues with the ftc dc motor controller timming
                 sleep(2);
                 set_drive_power(v_drive_inches_power, v_drive_inches_power);
-                setSecondMessage("drive_inches_complete: set the drive power "
+                set_second_message("drive_inches_complete: set the drive power "
                         +  " p: " + v_drive_inches_power
                         + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                         + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
@@ -1818,7 +1772,7 @@ public class CFPushBotHardware extends OpMode {
                     set_drive_power(0.0f, 0.0f);
                     //
                     sleep(50);
-                    setSecondMessage("drive_inches_complete: drive complete "
+                    set_second_message("drive_inches_complete: drive complete "
                             +  " p: " + v_drive_inches_power
                             + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                             + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
@@ -1839,7 +1793,7 @@ public class CFPushBotHardware extends OpMode {
                     if(v_drive_inches_power > v_drive_power_slowdown2) {
                         set_drive_power(v_drive_power_slowdown2, v_drive_power_slowdown2);
                         v_drive_inches_power = v_drive_power_slowdown2;
-                        setSecondMessage("drive_inches_complete: slowdown 2 "
+                        set_second_message("drive_inches_complete: slowdown 2 "
                                 +  " p: " + v_drive_inches_power + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                                 + ",l:" + v_drive_inches_ticks_left + ",r:" + v_drive_inches_ticks_right);
                     }*/
@@ -1864,7 +1818,7 @@ public class CFPushBotHardware extends OpMode {
                         }
                         v_drive_slowdown1_already_set = true;
                         v_drive_inches_power = v_drive_power_slowdown1;
-                        setSecondMessage("drive_inches_complete: slow down 1 "
+                        set_second_message("drive_inches_complete: slow down 1 "
                                         +  " p: " + v_drive_inches_power
                                         + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                                         + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
@@ -1901,7 +1855,7 @@ public class CFPushBotHardware extends OpMode {
                         set_drive_power(v_drive_inches_power, v_drive_inches_power );
                     }
                     if(v_loop_ticks_slow) {
-                        setSecondMessage("drive_inches_complete: gyro ch:" + currentHeading + ", th:" + v_drive_inches_heading
+                        set_second_message("drive_inches_complete: gyro ch:" + currentHeading + ", th:" + v_drive_inches_heading
                                 +  " p: " + v_drive_inches_power
                                 + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                                 + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
@@ -1911,7 +1865,7 @@ public class CFPushBotHardware extends OpMode {
                     }
                 }else{
                     if(v_loop_ticks_slow) {
-                        setSecondMessage("drive_inches_complete: "
+                        set_second_message("drive_inches_complete: "
                                         +  " p: " + v_drive_inches_power
                                         + ",tl:" + v_drive_inches_ticks_target_left + ",tr:" + v_drive_inches_ticks_target_right
                                         + ",tlsl:" + v_drive_inches_ticks_target_left_slowdown + ",trsl:" + v_drive_inches_ticks_target_right_slowdown
@@ -1981,7 +1935,7 @@ public class CFPushBotHardware extends OpMode {
         }
 
         if (v_turn_degrees_usingGyro == true && v_sensor_gyro == null ){
-            setSecondMessage("turn_degrees() no Gyro to use");
+            set_second_message("turn_degrees() no Gyro to use");
             v_turn_degrees_usingGyro = false;
         }
         if (v_turn_degrees_usingGyro == true) {
@@ -2071,7 +2025,7 @@ public class CFPushBotHardware extends OpMode {
                 }
 
             }
-            setSecondMessage("turn_degrees: d:" + degrees
+            set_second_message("turn_degrees: d:" + degrees
                             + ",ch:" + v_turn_degrees_heading_start
                             + ",ht:" + v_turn_degrees_heading_target
                             + ",htsl:" + v_turn_degrees_heading_target_slow
@@ -2092,7 +2046,7 @@ public class CFPushBotHardware extends OpMode {
                 v_turn_degrees_ticks_target_left = v_motor_left_drive.getCurrentPosition() - ticks;
                 v_turn_degrees_ticks_target_right =  v_motor_right_drive.getCurrentPosition() + ticks;
             }
-            setSecondMessage("turn_degrees: ticks:" + ticks + ", lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() );
+            set_second_message("turn_degrees: ticks:" + ticks + ", lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() );
 
         }
 
@@ -2110,7 +2064,7 @@ public class CFPushBotHardware extends OpMode {
         try{
 
             if(v_motor_left_drive == null || v_motor_right_drive == null){
-                setSecondMessage("turn_complete: no motors");
+                set_second_message("turn_complete: no motors");
                 v_turn_degrees_state = -1;
                 return true;
             }
@@ -2125,7 +2079,7 @@ public class CFPushBotHardware extends OpMode {
                             v_motor_right_drive.setPower(0 - v_turn_motorspeed_slow);
                             //set_drive_power(v_turn_motorspeed_slow, 0-v_turn_motorspeed_slow);
                             sleep(2);
-                            setSecondMessage("turn_complete: set slow turn cw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
+                            set_second_message("turn_complete: set slow turn cw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
 
 
                         }else {
@@ -2134,7 +2088,7 @@ public class CFPushBotHardware extends OpMode {
                             v_motor_right_drive.setPower(0 - v_turn_motorspeed);
                             //set_drive_power(v_turn_motorspeed, 0- v_turn_motorspeed);
                             sleep(2);
-                            setSecondMessage("turn_complete: set fast turn cw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
+                            set_second_message("turn_complete: set fast turn cw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
 
                         }
                         //v_motor_left_drive.setPowerFloat();
@@ -2146,14 +2100,14 @@ public class CFPushBotHardware extends OpMode {
                             v_motor_left_drive.setPower(0 - v_turn_motorspeed_slow);
                             //set_drive_power(0-v_turn_motorspeed_slow,  v_turn_motorspeed_slow);
                             sleep(2);
-                            setSecondMessage("turn_complete: set slow turn ccw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
+                            set_second_message("turn_complete: set slow turn ccw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower());
                         }else {
                             //turning left so turn on right motor first
                             v_motor_right_drive.setPower(v_turn_motorspeed);
                             v_motor_left_drive.setPower(0 - v_turn_motorspeed);
                             set_drive_power(0-v_turn_motorspeed, v_turn_motorspeed);
                             sleep(2);
-                            setSecondMessage("turn_complete: set fast turn ccw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower() );
+                            set_second_message("turn_complete: set fast turn ccw r:" + v_motor_right_drive.getPower() + "l:" + v_motor_left_drive.getPower() );
                         }
                         //v_motor_right_drive.setPowerFloat();
                         //v_motor_left_drive.setPowerFloat();
@@ -2206,7 +2160,7 @@ public class CFPushBotHardware extends OpMode {
                                 //v_motor_left_drive.setPowerFloat();
                                 //set_drive_power(0.0f, 0.0f);
                                 v_turn_degrees_state++;
-                                setSecondMessage("turn_complete: done cw hc:" + currentHeading
+                                set_second_message("turn_complete: done cw hc:" + currentHeading
                                         + ",ht:" + v_turn_degrees_heading_target
                                         + ",htsl:" + v_turn_degrees_heading_target_slow
                                         + ",htst:" + v_turn_degrees_heading_target_stop
@@ -2255,7 +2209,7 @@ public class CFPushBotHardware extends OpMode {
                                 //v_motor_left_drive.setPowerFloat();
                                 //set_drive_power(0.0f, 0.0f);
                                 v_turn_degrees_state++;
-                                setSecondMessage("turn_complete: done cw hc:" + currentHeading
+                                set_second_message("turn_complete: done cw hc:" + currentHeading
                                         + ",ht:" + v_turn_degrees_heading_target
                                         + ",htsl:" + v_turn_degrees_heading_target_slow
                                         + ",htst:" + v_turn_degrees_heading_target_stop
@@ -2303,7 +2257,7 @@ public class CFPushBotHardware extends OpMode {
                                 //v_motor_right_drive.setPowerFloat();
                                 //set_drive_power(0.0f, 0.0f);
                                 v_turn_degrees_state++;
-                                setSecondMessage("turn_complete: done ccw "
+                                set_second_message("turn_complete: done ccw "
                                         + "hc:" + currentHeading
                                         + ",ht:" + v_turn_degrees_heading_target
                                         + ",htsl:" + v_turn_degrees_heading_target_slow
@@ -2317,7 +2271,7 @@ public class CFPushBotHardware extends OpMode {
                             }
                         }
                         if (is_slow_tick()){
-                            setSecondMessage("turn_complete: Waiting on heading "
+                            set_second_message("turn_complete: Waiting on heading "
                                     + " hc:" + currentHeading
                                     + ",ht:" + v_turn_degrees_heading_target
                                     + ",htsl:" + v_turn_degrees_heading_target_slow
@@ -2336,12 +2290,12 @@ public class CFPushBotHardware extends OpMode {
                                 (v_turn_degrees_iscwturn == false &&  v_motor_left_drive.getCurrentPosition() <= v_turn_degrees_ticks_target_left &&  v_motor_right_drive.getCurrentPosition() >= v_turn_degrees_ticks_target_right )
                                 ) {
                             set_drive_power(0.0f, 0.0f);
-                            setSecondMessage("turn_complete: encoders reached value lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower());
+                            set_second_message("turn_complete: encoders reached value lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower());
                             v_turn_degrees_state++;
                             return true;
                         }else {
                             //if (is_slow_tick()){
-                            setSecondMessage("turn_complete: Waiting on encoders lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower() );
+                            set_second_message("turn_complete: Waiting on encoders lt:" + v_turn_degrees_ticks_target_left + " rt:" + v_turn_degrees_ticks_target_right + ", re:" + v_motor_right_drive.getCurrentPosition() + ", le:" + v_motor_left_drive.getCurrentPosition() + ", rp:" + v_motor_right_drive.getPower() + ", lp:" + v_motor_left_drive.getPower() );
                             //}
                         }
                     }
@@ -2691,11 +2645,11 @@ public class CFPushBotHardware extends OpMode {
                         , v_servo_dump_climbers_MaxPosition
                 );
         try {
-            setSecondMessage("dump before null " + v_servo_dump_climbers_position);
+            set_second_message("dump before null " + v_servo_dump_climbers_position);
             if (v_servo_dump_climbers != null) {
-                setSecondMessage("dump after null " + v_servo_dump_climbers_position);
+                set_second_message("dump after null " + v_servo_dump_climbers_position);
                 v_servo_dump_climbers.setPosition(v_servo_dump_climbers_position);
-                setSecondMessage("dump servo " + v_servo_dump_climbers_position );
+                set_second_message("dump servo " + v_servo_dump_climbers_position );
                 return v_servo_dump_climbers_position;
             } else {
                 return ServoErrorResultPosition;
@@ -3600,5 +3554,190 @@ public class CFPushBotHardware extends OpMode {
         }catch(InterruptedException ex){
             //do stuff
         }
+    }
+    
+    //Below are The Telmetry Code to Write Debug to the Phones
+
+    String secondMessage = "N/A";
+
+
+    //--------------------------------------------------------------------------
+    //
+    // update_telemetry
+    //
+    /**
+     * Update the telemetry with current values from the base class.
+     */
+    public void update_telemetry ()
+
+    {
+        try {
+            if (a_warning_generated()) {
+                set_first_message(a_warning_message());
+            }
+            telemetry.addData("01", loopCounter() + ":" + hardware_loop_slowtime_milliseconds() + ":" + secondMessage);
+            telemetry.addData("02", "Gyro: H:" + sensor_gyro_get_heading() + ",X:" + sensor_gyro_get_rawX() + ",Y:" + sensor_gyro_get_rawY() + ",Z:" + sensor_gyro_get_rawZ());
+            if (v_debug) {
+                //
+                // Send telemetry data to the driver station.
+                //
+
+
+                telemetry.addData
+                        ("03"
+                                , "Left Drive: "
+                                        + a_left_drive_power()
+                                        + ", "
+                                        + a_left_encoder_count()
+                                        + ", "
+                                        + a_left_drive_mode()
+                        );
+                telemetry.addData
+                        ("04"
+                                , "Right Drive: "
+                                        + a_right_drive_power()
+                                        + ", "
+                                        + a_right_encoder_count()
+                                        + ", "
+                                        + a_right_drive_mode()
+                        );
+                telemetry.addData
+                        ("05"
+                                , "RPA Base Position: " + a_rpabase_position()
+                        );
+                telemetry.addData
+                        ("06"
+                                , "RPA Arm Position: " + a_rpa_arm_power() + ":" + rpa_arm_extended() + ":" + rpa_arm_retracted()
+                        );
+                telemetry.addData(
+                        "07", "Flip: Right:" + a_flip_right_position()
+                );
+                /*telemetry.addData
+                        ("05"
+                                , "Arm Shoulder: " + a_arm_shoulder_position()
+                        );
+                telemetry.addData
+                        ("06"
+                                , "Arm Elbow: " + a_arm_elbow_position()
+                        );
+                telemetry.addData
+                        ("07"
+                                , "Arm Wrist: " + a_arm_wrist_position()
+                        );
+
+                int[] v_color_rgba = sensor_color_get_rgba();
+                telemetry.addData(
+                        "10", "Color RGBA: " + v_color_rgba[0]
+                                + "," + v_color_rgba[1]
+                                + "," + v_color_rgba[2]
+                                + "," + v_color_rgba[3]
+                );
+
+                telemetry.addData(
+                        "1l", "Flip: Right:" + a_flip_right_position() + ", Left:" + a_flip_left_position()
+                );
+                telemetry.addData(
+                        "12", "Ultra: " + sensor_ultraLegecy_distance()
+                );
+                telemetry.addData(
+                        "13", "Light: tape:" + sensor_lightLegecy_white_tape_detected() + "," + sensor_lightLegecy_amountDetected()
+                );*/
+            }
+        }catch (Exception p_exeception)
+        {
+            set_first_message("updateTelmetry: " + p_exeception.getLocalizedMessage());
+        }
+    } // update_telemetry
+
+    //--------------------------------------------------------------------------
+    //
+    // update_gamepad_telemetry
+    //
+    /**
+     * Update the telemetry with current gamepad readings.
+     */
+    public void update_gamepad_telemetry ()
+
+    {
+        //
+        // Send telemetry data concerning gamepads to the driver station.
+        //
+        if (v_debug) {
+            telemetry.addData("14", "GP1 Left: " + -opMode.gamepad1.left_stick_y);
+            telemetry.addData("15", "GP1 Right: " + -opMode.gamepad1.right_stick_y);
+            telemetry.addData("16", "GP2 Left: " + -opMode.gamepad2.left_stick_y);
+            telemetry.addData("17", "GP2 X: " + opMode.gamepad2.x);
+            telemetry.addData("18", "GP2 Y: " + opMode.gamepad2.y);
+            telemetry.addData("19", "GP2 A: " + opMode.gamepad2.a);
+            telemetry.addData("20", "GP1 LT: " + opMode.gamepad1.left_trigger);
+            telemetry.addData("21", "GP1 RT: " + opMode.gamepad1.right_trigger);
+        }
+    } // update_gamepad_telemetry
+
+    //--------------------------------------------------------------------------
+    //
+    // set_first_message
+    //
+    /**
+     * Update the telemetry's first message with the specified message.
+     */
+    public void set_first_message (String p_message)
+
+    {
+        telemetry.addData ( "00", p_message);
+
+    } // set_first_message
+
+    //--------------------------------------------------------------------------
+    //
+    // set_first_message
+    //
+    /**
+     * Update the telemetry's first message with the specified message.
+     */
+    public void set_second_message (String p_message)
+
+    {
+        secondMessage = p_message;
+        if (v_debug) {
+            DbgLog.msg(loopCounter() + ": " + p_message);
+        }
+
+    } // set_first_message
+    //--------------------------------------------------------------------------
+    //
+    // set_error_message
+    //
+    /**
+     * Update the telemetry's first message to indicate an error.
+     */
+    public void set_error_message (String p_message)
+
+    {
+        set_first_message ("ERROR: " + p_message);
+
+    } // set_error_message
+
+
+    private ElapsedTime period  = new ElapsedTime();
+    /***
+     *
+     * waitForTick implements a periodic delay. However, this acts like a metronome with a regular
+     * periodic tick.  This is used to compensate for varying processing times for each cycle.
+     * The function looks at the elapsed cycle time, and sleeps for the remaining time interval.
+     *
+     * @param periodMs  Length of wait cycle in mSec.
+     * @throws InterruptedException
+     */
+    public void waitForTick(long periodMs) throws InterruptedException {
+
+        long  remaining = periodMs - (long)period.milliseconds();
+
+        // sleep for the remaining portion of the regular cycle period.
+        if (remaining > 0)
+            Thread.sleep(remaining);
+
+        // Reset the cycle clock for the next pass.
+        period.reset();
     }
 }

@@ -1,7 +1,4 @@
-package org.usfirst.ControlFreaks;
-
-import android.location.Address;
-import android.util.Log;
+package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.hardware.HardwareMap;

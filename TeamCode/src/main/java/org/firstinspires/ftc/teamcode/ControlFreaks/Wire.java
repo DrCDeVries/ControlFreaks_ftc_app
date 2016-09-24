@@ -1,4 +1,4 @@
-package org.usfirst.ControlFreaks;
+package org.firstinspires.ftc.teamcode.ControlFreaks;
 
 /**
  * Created by adevries on 11/16/2015.
@@ -11,12 +11,13 @@ package org.usfirst.ControlFreaks;
  *      1) in portIsReady fixed problem related to repeated read of same address
  *      2) in executeCommands added missing line to stop idle polling
  */
-import android.util.Log;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cController;
 import com.qualcomm.robotcore.hardware.I2cDevice;
-import org.usfirst.ControlFreaks.Wire.Element;
+
+import org.firstinspires.ftc.teamcode.ControlFreaks.ArrayQueue;
+
 import java.util.concurrent.locks.Lock;
 
 public class Wire implements I2cController.I2cPortReadyCallback {
